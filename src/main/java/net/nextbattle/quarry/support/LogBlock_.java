@@ -6,18 +6,18 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 public class LogBlock_ {
-    private Consumer lbconsumer;
-    
+    private final Consumer lbconsumer;
+
     public LogBlock_() {
-        lbconsumer = ((LogBlock)Bukkit.getServer().getPluginManager().getPlugin("LogBlock")).getConsumer();
+        lbconsumer = ((LogBlock) Bukkit.getServer().getPluginManager().getPlugin("LogBlock")).getConsumer();
     }
-    
+
     public void logRemoval(String username, Location loc, int type, byte data) {
         lbconsumer.queueBlockBreak(username, loc, type, data);
     }
-    
+
     public void logPlacement(String username, Location loc, int type, byte data) {
         lbconsumer.queueBlockPlace(username, loc, type, data);
     }
-    
+
 }

@@ -22,6 +22,11 @@
     </properties>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/java/resources</directory>
+            </resource>
+        </resources>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
             <plugin>
@@ -95,6 +100,34 @@
             <artifactId>BongoBukkit</artifactId>
             <version>1.5.2</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.coreprotect</groupId>
+            <artifactId>CoreProtect</artifactId>
+            <version>1.5.2</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/CoreProtect.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q.worldguard</groupId>
+            <artifactId>WorldGuard</artifactId>
+            <version>1.5.2</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/WorldGuard.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>WorldEdit</artifactId>
+            <version>1.5.2</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/WorldEdit.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>de.deddiz</groupId>
+            <artifactId>LogBlock</artifactId>
+            <version>1.5.2</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/LogBlock.jar</systemPath>
         </dependency>
     </dependencies>
 </project>

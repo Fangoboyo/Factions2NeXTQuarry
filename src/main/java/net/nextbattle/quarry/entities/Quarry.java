@@ -1,40 +1,45 @@
 package net.nextbattle.quarry.entities;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
 import net.nextbattle.quarry.functions.PlayerFunctions;
 import net.nextbattle.quarry.functions.StringFunctions;
 import net.nextbattle.quarry.functions.WorldFunctions;
 import net.nextbattle.quarry.main.MainClass;
 import net.nextbattle.quarry.types.BlockLocation;
-import org.bukkit.Bukkit;
-import org.bukkit.Effect;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
-import org.bukkit.material.Furnace;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Furnace;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 
 public class Quarry {
 
     public static ArrayList<Quarry> quarrylist = new ArrayList<>();
-    private BlockFace dir;
-    private int tier;
-    private BlockLocation block;
-    private String playername;
-    private ArrayList<BlockLocation> QuarryBlocks;
-    private ArrayList<BlockLocation> ArmBlocks;
+    public Inventory fuel_inv;
+    public Inventory upgr_inv;
+    public BlockLocation upgrade_slot_1_bl = null;
+    public BlockLocation upgrade_slot_2_bl = null;
+    public BlockLocation upgrade_slot_3_bl = null;
+    public int upgrade_slot_1 = 0;
+    public int upgrade_slot_2 = 0;
+    public int upgrade_slot_3 = 0;
+    private final BlockFace dir;
+    private final int tier;
+    private final BlockLocation block;
+    private final String playername;
+    private final ArrayList<BlockLocation> QuarryBlocks;
+    private final ArrayList<BlockLocation> ArmBlocks;
     private int xwork = 0;
     private int ywork = 0;
     private int zwork = 0;
@@ -42,8 +47,6 @@ public class Quarry {
     private int yrealwork = -1;
     private int zrealwork = -1;
     private boolean active = false;
-    public Inventory fuel_inv;
-    public Inventory upgr_inv;
     private int fuelcounter;
     private int nextTick = 0;
     private int buildTick = 0;
@@ -51,12 +54,45 @@ public class Quarry {
     private FileConfiguration fc;
     private String random_id;
     private boolean cantick = true;
-    public BlockLocation upgrade_slot_1_bl = null;
-    public BlockLocation upgrade_slot_2_bl = null;
-    public BlockLocation upgrade_slot_3_bl = null;
-    public int upgrade_slot_1 = 0;
-    public int upgrade_slot_2 = 0;
-    public int upgrade_slot_3 = 0;
+
+    public Quarry(BlockFace dir, int tier, Block b, Player p) {
+        this.dir = dir;
+        this.tier = tier;
+        this.block = new BlockLocation(b);
+        this.playername = p.getName();
+        QuarryBlocks = new ArrayList<>();
+        ArmBlocks = new ArrayList<>();
+        fuel_inv = Bukkit.createInventory(null, 27, "Quarry: Fuel Bay");
+        upgr_inv = Bukkit.createInventory(null, 27, "Quarry: Upgrade Slots");
+        fuelcounter = 0;
+        quarrylist.add(this);
+        newFile();
+    }
+
+    public Quarry(Inventory fuel_inv, Inventory upgr_inv, BlockFace dir, int tier, BlockLocation block, String playername, ArrayList<BlockLocation> ArmBlocks, ArrayList<BlockLocation> QuarryBlocks, int xwork, int ywork, int zwork, int xrealwork, int yrealwork, int zrealwork, boolean active, int fuelcounter, int nextTick, int buildTick, String random_id) {
+        this.fuel_inv = fuel_inv;
+        this.upgr_inv = upgr_inv;
+        this.dir = dir;
+        this.tier = tier;
+        this.block = block;
+        this.playername = playername;
+        this.QuarryBlocks = QuarryBlocks;
+        this.ArmBlocks = ArmBlocks;
+        this.xwork = xwork;
+        this.ywork = ywork;
+        this.zwork = zwork;
+        this.xrealwork = xrealwork;
+        this.yrealwork = yrealwork;
+        this.zrealwork = zrealwork;
+        this.active = active;
+        this.fuelcounter = fuelcounter;
+        this.nextTick = nextTick;
+        this.buildTick = buildTick;
+        this.random_id = random_id;
+        this.file = new File(MainClass.plugin.getDataFolder(), "/quarries/" + random_id + ".nxtb");
+        this.fc = YamlConfiguration.loadConfiguration(file);
+        quarrylist.add(this);
+    }
 
     public static void LoadQuarry(File loadfile) {
         FileConfiguration fc_temp = YamlConfiguration.loadConfiguration(loadfile);
@@ -140,6 +176,83 @@ public class Quarry {
         return false;
     }
 
+    public static boolean idExists(String id) {
+        for (Quarry q : quarrylist) {
+            if (id.equals(q.getRandomID())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void saveAll() {
+        for (Quarry q : quarrylist) {
+            try {
+                q.save();
+            } catch (IOException ex) {
+                Bukkit.getServer().getLogger().log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public static Quarry isActualQuarry(Block b) {
+        try {
+            for (Quarry q : quarrylist) {
+                if (q.block.equals(new BlockLocation(b))) {
+                    return q;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static boolean isInQuarriesBlock(Block b) {
+        boolean contains = false;
+        for (Quarry q : quarrylist) {
+            if (q.containsBlock(b)) {
+                contains = true;
+            }
+        }
+        return contains;
+    }
+
+    public static boolean userCanPlaceTier(int tier, String playername) {
+        Player p = Bukkit.getServer().getPlayer(playername);
+        if (p == null) {
+            return false;
+        }
+        if (p.hasPermission("nextquarry.admin")) {
+            return true;
+        }
+        if (quarrylist.size() >= MainClass.config.globalmaxquarries) {
+            return false;
+        }
+        int quarries = 0;
+        for (Quarry q : quarrylist) {
+            if (q.getPlayerName().equals(playername)) {
+                quarries++;
+            }
+        }
+        if (quarries >= MainClass.config.user_max_quarries) {
+            return false;
+        }
+        int tierc = 0;
+        for (Quarry q : quarrylist) {
+            if (q.getPlayerName().equals(playername) && q.getTier() == tier) {
+                tierc++;
+            }
+        }
+        if (tier == 0 && tierc >= MainClass.config.maxquarriestier1) {
+            return false;
+        }
+        if (tier == 1 && tierc >= MainClass.config.maxquarriestier2) {
+            return false;
+        }
+        return tier != 2 || tierc < MainClass.config.maxquarriestier3;
+    }
+
     public void save() throws IOException {
         //Inventories
         fc.set("fuel_inv", fuel_inv.getContents());
@@ -221,66 +334,8 @@ public class Quarry {
         return 0;
     }
 
-    public Quarry(BlockFace dir, int tier, Block b, Player p) {
-        this.dir = dir;
-        this.tier = tier;
-        this.block = new BlockLocation(b);
-        this.playername = p.getName();
-        QuarryBlocks = new ArrayList<>();
-        ArmBlocks = new ArrayList<>();
-        fuel_inv = Bukkit.createInventory(null, 27, "Quarry: Fuel Bay");
-        upgr_inv = Bukkit.createInventory(null, 27, "Quarry: Upgrade Slots");
-        fuelcounter = 0;
-        quarrylist.add(this);
-        newFile();
-    }
-
-    public Quarry(Inventory fuel_inv, Inventory upgr_inv, BlockFace dir, int tier, BlockLocation block, String playername, ArrayList<BlockLocation> ArmBlocks, ArrayList<BlockLocation> QuarryBlocks, int xwork, int ywork, int zwork, int xrealwork, int yrealwork, int zrealwork, boolean active, int fuelcounter, int nextTick, int buildTick, String random_id) {
-        this.fuel_inv = fuel_inv;
-        this.upgr_inv = upgr_inv;
-        this.dir = dir;
-        this.tier = tier;
-        this.block = block;
-        this.playername = playername;
-        this.QuarryBlocks = QuarryBlocks;
-        this.ArmBlocks = ArmBlocks;
-        this.xwork = xwork;
-        this.ywork = ywork;
-        this.zwork = zwork;
-        this.xrealwork = xrealwork;
-        this.yrealwork = yrealwork;
-        this.zrealwork = zrealwork;
-        this.active = active;
-        this.fuelcounter = fuelcounter;
-        this.nextTick = nextTick;
-        this.buildTick = buildTick;
-        this.random_id = random_id;
-        this.file = new File(MainClass.plugin.getDataFolder(), "/quarries/" + random_id + ".nxtb");
-        this.fc = YamlConfiguration.loadConfiguration(file);
-        quarrylist.add(this);
-    }
-
     public String getRandomID() {
         return random_id;
-    }
-
-    public static boolean idExists(String id) {
-        for (Quarry q : quarrylist) {
-            if (id.equals(q.getRandomID())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static void saveAll() {
-        for (Quarry q : quarrylist) {
-            try {
-                q.save();
-            } catch (IOException ex) {
-                Bukkit.getServer().getLogger().log(Level.SEVERE, null, ex);
-            }
-        }
     }
 
     public void newFile() {
@@ -326,19 +381,6 @@ public class Quarry {
         return 12;
     }
 
-    public static Quarry isActualQuarry(Block b) {
-        try {
-            for (Quarry q : quarrylist) {
-                if (q.block.equals(new BlockLocation(b))) {
-                    return q;
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     public int getFuelCounter() {
         return fuelcounter;
     }
@@ -368,10 +410,7 @@ public class Quarry {
     }
 
     public boolean isQuarryBlock(Block b) {
-        if (QuarryBlocks.contains(new BlockLocation(b))) {
-            return true;
-        }
-        return false;
+        return QuarryBlocks.contains(new BlockLocation(b));
     }
 
     public int getUpgradeCount(ItemStack item) {
@@ -421,12 +460,12 @@ public class Quarry {
         if (tier == 2) {
             WorldFunctions.queueBlock(block.getBlock(), Material.OBSIDIAN.getId(), (byte) 0);
         }
-        
+
         //Reset upgrade slots
         upgrade_slot_1 = 0;
         upgrade_slot_2 = 0;
         upgrade_slot_3 = 0;
-        
+
         //Check for upgrades and fill slots
         if (getUpgradeCount(MainClass.citems.smelter_upgrade) > 0) {
             if (upgrade_slot_1 == 0 || upgrade_slot_1 == 1) {
@@ -564,7 +603,7 @@ public class Quarry {
         } else {
             buildTick -= 1;
         }
-        
+
         if (!mineStep()) {
             drawArm();
         } else {
@@ -582,9 +621,10 @@ public class Quarry {
             Location loc2 = block.getLocation();
             loc2.add(0, 1, 0);
             BlockState blockState = block.getWorld().getBlockAt(loc2).getState();
-            if (blockState == null) { return false; }
-            if (blockState instanceof Chest)
-            {
+            if (blockState == null) {
+                return false;
+            }
+            if (blockState instanceof Chest) {
                 Chest chest = (Chest) blockState;
                 if (chest.getInventory().contains(Material.IRON_ORE)) {
                     if (PlayerFunctions.addItems(chest.getInventory(), new ItemStack(Material.IRON_INGOT))) {
@@ -845,7 +885,7 @@ public class Quarry {
                         Location loc = new Location(world, block.getX() - x - 1, block.getY() + (5 - y), block.getZ() + z + 2);
                         if ((x == xvar || z == zvar) && y == 0 && !(x == xvar && z == zvar)) {
                             if (MainClass.ps.mayEditBlock(getBlockAtSpot(xwork, ywork, zwork), playername)) {
-                                if ((!MainClass.config.draw_all_beams && z != zvar) || (MainClass.config.draw_all_beams)) {
+                                if (MainClass.config.draw_all_beams || z != zvar) {
                                     WorldFunctions.queueBlock(world.getBlockAt(loc), Material.COBBLE_WALL.getId(), (byte) 0);
                                     ArmBlocks.add(new BlockLocation(loc));
                                     MainClass.ps.logPlacement(playername, world.getBlockAt(loc).getLocation(), world.getBlockAt(loc).getTypeId(), world.getBlockAt(loc).getData());
@@ -911,7 +951,7 @@ public class Quarry {
                         Location loc = new Location(world, block.getX() - 2 - x, block.getY() + (5 - y), block.getZ() - z - 1);
                         if ((x == xvar || z == zvar) && y == 0 && !(x == xvar && z == zvar)) {
                             if (MainClass.ps.mayEditBlock(getBlockAtSpot(xwork, ywork, zwork), playername)) {
-                                if ((!MainClass.config.draw_all_beams && z != zvar) || (MainClass.config.draw_all_beams)) {
+                                if (MainClass.config.draw_all_beams || z != zvar) {
                                     WorldFunctions.queueBlock(world.getBlockAt(loc), Material.COBBLE_WALL.getId(), (byte) 0);
                                     ArmBlocks.add(new BlockLocation(loc));
                                     MainClass.ps.logPlacement(playername, world.getBlockAt(loc).getLocation(), world.getBlockAt(loc).getTypeId(), world.getBlockAt(loc).getData());
@@ -976,7 +1016,7 @@ public class Quarry {
                         Location loc = new Location(world, x + block.getX() + 1, block.getY() + (5 - y), block.getZ() - z - 2);
                         if ((x == xvar || z == zvar) && y == 0 && !(x == xvar && z == zvar)) {
                             if (MainClass.ps.mayEditBlock(getBlockAtSpot(xwork, ywork, zwork), playername)) {
-                                if ((!MainClass.config.draw_all_beams && z != zvar) || (MainClass.config.draw_all_beams)) {
+                                if (MainClass.config.draw_all_beams || z != zvar) {
                                     WorldFunctions.queueBlock(world.getBlockAt(loc), Material.COBBLE_WALL.getId(), (byte) 0);
                                     ArmBlocks.add(new BlockLocation(loc));
                                     MainClass.ps.logPlacement(playername, world.getBlockAt(loc).getLocation(), world.getBlockAt(loc).getTypeId(), world.getBlockAt(loc).getData());
@@ -1041,7 +1081,7 @@ public class Quarry {
                         Location loc = new Location(world, x + block.getX() + 2, block.getY() + (5 - y), block.getZ() + z + 1);
                         if ((x == xvar || z == zvar) && y == 0 && !(x == xvar && z == zvar)) {
                             if (MainClass.ps.mayEditBlock(getBlockAtSpot(xwork, ywork, zwork), playername)) {
-                                if ((!MainClass.config.draw_all_beams && z != zvar) || (MainClass.config.draw_all_beams)) {
+                                if (MainClass.config.draw_all_beams || z != zvar) {
                                     WorldFunctions.queueBlock(world.getBlockAt(loc), Material.COBBLE_WALL.getId(), (byte) 0);
                                     ArmBlocks.add(new BlockLocation(loc));
                                     MainClass.ps.logPlacement(playername, world.getBlockAt(loc).getLocation(), world.getBlockAt(loc).getTypeId(), world.getBlockAt(loc).getData());
@@ -1099,16 +1139,6 @@ public class Quarry {
                 }
             }
         }
-    }
-
-    public static boolean isInQuarriesBlock(Block b) {
-        boolean contains = false;
-        for (Quarry q : quarrylist) {
-            if (q.containsBlock(b)) {
-                contains = true;
-            }
-        }
-        return contains;
     }
 
     public boolean containsBlock(Block b) {
@@ -1378,44 +1408,6 @@ public class Quarry {
 
     public String getPlayerName() {
         return playername;
-    }
-
-    public static boolean userCanPlaceTier(int tier, String playername) {
-        Player p = Bukkit.getServer().getPlayer(playername);
-        if (p == null) {
-            return false;
-        }
-        if (p.hasPermission("nextquarry.admin")) {
-            return true;
-        }
-        if (quarrylist.size() >= MainClass.config.globalmaxquarries) {
-            return false;
-        }
-        int quarries = 0;
-        for (Quarry q : quarrylist) {
-            if (q.getPlayerName().equals(playername)) {
-                quarries++;
-            }
-        }
-        if (quarries >= MainClass.config.user_max_quarries) {
-            return false;
-        }
-        int tierc = 0;
-        for (Quarry q : quarrylist) {
-            if (q.getPlayerName().equals(playername) && q.getTier() == tier) {
-                tierc++;
-            }
-        }
-        if (tier == 0 && tierc >= MainClass.config.maxquarriestier1) {
-            return false;
-        }
-        if (tier == 1 && tierc >= MainClass.config.maxquarriestier2) {
-            return false;
-        }
-        if (tier == 2 && tierc >= MainClass.config.maxquarriestier3) {
-            return false;
-        }
-        return true;
     }
 
     public Quarry delete() {

@@ -1,17 +1,17 @@
 package net.nextbattle.quarry.main;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
 import net.nextbattle.quarry.entities.CommandHandler;
 import net.nextbattle.quarry.entities.Configuration;
 import net.nextbattle.quarry.entities.CustomItems;
 import net.nextbattle.quarry.entities.Quarry;
-import net.nextbattle.quarry.metrics.Metrics;
 import net.nextbattle.quarry.support.PluginSupport;
 import net.nextbattle.quarry.updater.Updater;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
 
 public final class MainClass extends JavaPlugin {
 
@@ -84,16 +84,6 @@ public final class MainClass extends JavaPlugin {
             Quarry.LoadQuarry(child);
         }
 
-        //Plugin Metrics
-        if (config.send_usage_data) {
-            try {
-                Metrics metrics = new Metrics(this);
-                Metrics.initMetrics(metrics);
-                metrics.start();
-            } catch (IOException e) {
-            }
-        }
-
         //Main Timer
         timer = getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
             @Override
@@ -111,7 +101,7 @@ public final class MainClass extends JavaPlugin {
                 Quarry.saveAll();
                 getServer().getLogger().log(Level.INFO, "NeXTQuarry: All quarries saved.");
             }
-        }, 20L*(config.save_interval), 20L*(config.save_interval));
+        }, 20L * (config.save_interval), 20L * (config.save_interval));
     }
 
     @Override

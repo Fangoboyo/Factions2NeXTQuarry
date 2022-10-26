@@ -14,5 +14,41 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.github.EaglerMaven:MassiveCore:6.4.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.github.EaglerMaven:Factions:2.0.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.github.EaglerMaven:BongoBukkit:1.5.2" level="project" />
+    <orderEntry type="module-library">
+      <library name="Maven: net.coreprotect:CoreProtect:1.5.2">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/CoreProtect.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Maven: com.sk89q.worldguard:WorldGuard:1.5.2">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/WorldGuard.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Maven: com.sk89q:WorldEdit:1.5.2">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/WorldEdit.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Maven: de.deddiz:LogBlock:1.5.2">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/LogBlock.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

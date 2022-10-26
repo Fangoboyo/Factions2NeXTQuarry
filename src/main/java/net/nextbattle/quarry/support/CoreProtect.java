@@ -16,7 +16,7 @@ public class CoreProtect {
             return null;
         }
         CoreProtectAPI CoreProtect = ((CoreProtect) plugin).getCoreProtect();
-        if (CoreProtect.isEnabled() == false) {
+        if (!CoreProtect.isEnabled()) {
             return null;
         }
         return CoreProtect;
@@ -25,7 +25,7 @@ public class CoreProtect {
     public void logRemoval(String username, Location loc, int type, byte data) {
         getCoreProtect().logRemoval(username, loc, type, data);
     }
-    
+
     public void logPlacement(String username, Location loc, int type, byte data) {
         getCoreProtect().logPlacement(username, loc, type, data);
     }

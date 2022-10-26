@@ -21,7 +21,7 @@ public class CommandHandler implements CommandExecutor {
                     cs.sendMessage(ChatColor.GOLD + "You can't execute this command from the console.");
                     return false;
                 }
-                
+
                 Player p = (Player) cs;
 
                 if (!p.hasPermission("nextquarry.admin")) {
@@ -44,11 +44,11 @@ public class CommandHandler implements CommandExecutor {
                     p.getInventory().addItem(MainClass.citems.fuel_finder_upgrade);
                 } else if (args[1].equals("chestminer")) {
                     p.getInventory().addItem(MainClass.citems.chest_miner);
-                }else if (args[1].equals("smelter")) {
+                } else if (args[1].equals("smelter")) {
                     p.getInventory().addItem(MainClass.citems.smelter_upgrade);
                 } else if (args[1].equals("fuelupgrade")) {
                     p.getInventory().addItem(MainClass.citems.fuel_efficiency_upgrade);
-                }  else if (args[1].equals("liquidminer")) {
+                } else if (args[1].equals("liquidminer")) {
                     p.getInventory().addItem(MainClass.citems.liquid_miner);
                 } else {
                     p.sendMessage(ChatColor.GOLD + "This item does not exist!");

@@ -2,11 +2,9 @@
   <library name="lib">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/lib/WorldGuard.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/Factions.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/LogBlock.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/WorldEdit.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/CoreProtect.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/craftbukkit.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

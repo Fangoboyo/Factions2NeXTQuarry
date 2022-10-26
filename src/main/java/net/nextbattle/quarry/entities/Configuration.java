@@ -1,12 +1,13 @@
 package net.nextbattle.quarry.entities;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import net.nextbattle.quarry.main.MainClass;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Configuration {
 
@@ -35,6 +36,35 @@ public class Configuration {
     public int maxquarriestier3 = 8;
     public int user_max_quarries = 24;
     public int save_interval = 60;
+
+    public Configuration() {
+        cantbreak = new ArrayList<>();
+        cantbreak.add(Material.BEDROCK);
+        cantbreak.add(Material.OBSIDIAN);
+        cantbreak.add(Material.STATIONARY_WATER);
+        cantbreak.add(Material.STATIONARY_LAVA);
+        cantbreak.add(Material.WATER);
+        cantbreak.add(Material.LAVA);
+        privatequarries = true;
+        autoupdate = false;
+        updatenotify = true;
+        continue_when_unloaded = false;
+        continue_when_offline = false;
+        dev_join_message = true;
+        send_usage_data = true;
+    }
+
+    public Configuration(boolean default_cantbreak) {
+        cantbreak = new ArrayList<>();
+        if (default_cantbreak) {
+            cantbreak.add(Material.BEDROCK);
+            cantbreak.add(Material.OBSIDIAN);
+            cantbreak.add(Material.STATIONARY_WATER);
+            cantbreak.add(Material.STATIONARY_LAVA);
+            cantbreak.add(Material.WATER);
+            cantbreak.add(Material.LAVA);
+        }
+    }
 
     public static void loadConfig() {
         FileConfiguration fc = new YamlConfiguration().loadConfiguration(new File(MainClass.plugin.getDataFolder(), "config.yml"));
@@ -82,35 +112,8 @@ public class Configuration {
         MainClass.config.draw_all_beams = fc.getBoolean("draw-all-beams");
         MainClass.config.user_max_quarries = fc.getInt("user-max-quarries");
         MainClass.config.save_interval = fc.getInt("save-interval");
-        if (MainClass.config.save_interval == 0) { MainClass.config.save_interval = 60; }
-    }
-
-    public Configuration() {
-        cantbreak = new ArrayList<>();
-        cantbreak.add(Material.BEDROCK);
-        cantbreak.add(Material.OBSIDIAN);
-        cantbreak.add(Material.STATIONARY_WATER);
-        cantbreak.add(Material.STATIONARY_LAVA);
-        cantbreak.add(Material.WATER);
-        cantbreak.add(Material.LAVA);
-        privatequarries = true;
-        autoupdate = false;
-        updatenotify = true;
-        continue_when_unloaded = false;
-        continue_when_offline = false;
-        dev_join_message = true;
-        send_usage_data = true;
-    }
-
-    public Configuration(boolean default_cantbreak) {
-        cantbreak = new ArrayList<>();
-        if (default_cantbreak) {
-            cantbreak.add(Material.BEDROCK);
-            cantbreak.add(Material.OBSIDIAN);
-            cantbreak.add(Material.STATIONARY_WATER);
-            cantbreak.add(Material.STATIONARY_LAVA);
-            cantbreak.add(Material.WATER);
-            cantbreak.add(Material.LAVA);
+        if (MainClass.config.save_interval == 0) {
+            MainClass.config.save_interval = 60;
         }
     }
 

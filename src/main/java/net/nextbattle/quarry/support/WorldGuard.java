@@ -8,17 +8,22 @@ import com.sk89q.worldguard.protection.flags.RegionGroupFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import java.util.*;
+
 public class WorldGuard {
+
+    public static <ProtectedRegion> List<ProtectedRegion> copyIterator(Iterator<ProtectedRegion> iter) {
+        List<ProtectedRegion> copy = new ArrayList<ProtectedRegion>();
+        while (iter.hasNext()) {
+            copy.add(iter.next());
+        }
+        return copy;
+    }
 
     public WorldGuardPlugin getWorldGuard() {
         Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
@@ -27,14 +32,6 @@ public class WorldGuard {
             return null;
         }
         return (WorldGuardPlugin) plugin;
-    }
-
-    public static <ProtectedRegion> List<ProtectedRegion> copyIterator(Iterator<ProtectedRegion> iter) {
-        List<ProtectedRegion> copy = new ArrayList<ProtectedRegion>();
-        while (iter.hasNext()) {
-            copy.add(iter.next());
-        }
-        return copy;
     }
 
     public boolean mayEditBlock(Block b, String player) {
@@ -52,7 +49,7 @@ public class WorldGuard {
     }
 
     private boolean internalGetState(StateFlag flag, String player,
-            LocalPlayer groupPlayer, ProtectedRegion globalRegion, List<ProtectedRegion> applicable) {
+                                     LocalPlayer groupPlayer, ProtectedRegion globalRegion, List<ProtectedRegion> applicable) {
         boolean found = false;
         boolean hasFlagDefined = false;
         boolean allowed = false;
@@ -129,7 +126,7 @@ public class WorldGuard {
     }
 
     private void clearParents(Set<ProtectedRegion> needsClear,
-            Set<ProtectedRegion> hasCleared, ProtectedRegion region) {
+                              Set<ProtectedRegion> hasCleared, ProtectedRegion region) {
         ProtectedRegion parent = region.getParent();
 
         while (parent != null) {

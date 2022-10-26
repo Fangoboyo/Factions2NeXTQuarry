@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Factions2NeXTQuarry.iml" filepath="$PROJECT_DIR$/Factions2NeXTQuarry.iml" />
+      <module fileurl="file://$PROJECT_DIR$/quarry.iml" filepath="$PROJECT_DIR$/quarry.iml" />
     </modules>
   </component>
 </project>

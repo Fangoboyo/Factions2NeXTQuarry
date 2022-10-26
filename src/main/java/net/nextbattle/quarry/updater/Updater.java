@@ -1,46 +1,76 @@
 package net.nextbattle.quarry.updater;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.Plugin;
+
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.XMLEvent;
 import java.io.*;
-import java.lang.Runnable;
-import java.lang.Thread;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.XMLEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.Plugin;
 
 public class Updater {
 
-    private Plugin plugin;
-    private UpdateType type;
+    private static final String DBOUrl = "http://dev.bukkit.org/server-mods/"; // Slugs will be appended to this to get to the project's RSS feed
+    private static final int BYTE_SIZE = 1024; // Used for downloading files
+    // Strings for reading RSS
+    private static final String TITLE = "title";
+    private static final String LINK = "link";
+    private static final String ITEM = "item";
+    private final Plugin plugin;
+    private final UpdateType type;
     private String versionTitle;
     private String versionLink;
     private long totalSize; // Holds the total size of the file
     //private double downloadedSize; TODO: Holds the number of bytes downloaded
     private int sizeLine; // Used for detecting file size
     private int multiplier; // Used for determining when to broadcast download updates
-    private boolean announce; // Whether to announce file downloads
+    private final boolean announce; // Whether to announce file downloads
     private URL url; // Connecting to RSS
-    private File file; // The plugin's file
-    private Thread thread; // Updater thread
-    private static final String DBOUrl = "http://dev.bukkit.org/server-mods/"; // Slugs will be appended to this to get to the project's RSS feed
-    private String[] noUpdateTag = {"-DEV", "-PRE", "-SNAPSHOT"}; // If the version number contains one of these, don't update.
-    private static final int BYTE_SIZE = 1024; // Used for downloading files
-    private String updateFolder = YamlConfiguration.loadConfiguration(new File("bukkit.yml")).getString("settings.update-folder"); // The folder that downloads will be placed in
+    private final File file; // The plugin's file
+    private final Thread thread; // Updater thread
+    private final String[] noUpdateTag = {"-DEV", "-PRE", "-SNAPSHOT"}; // If the version number contains one of these, don't update.
+    private final String updateFolder = YamlConfiguration.loadConfiguration(new File("bukkit.yml")).getString("settings.update-folder"); // The folder that downloads will be placed in
     private Updater.UpdateResult result = Updater.UpdateResult.SUCCESS; // Used for determining the outcome of the update process
-    // Strings for reading RSS
-    private static final String TITLE = "title";
-    private static final String LINK = "link";
-    private static final String ITEM = "item";
+
+    /**
+     * Initialize the updater
+     *
+     * @param plugin   The plugin that is checking for an update.
+     * @param slug     The dev.bukkit.org slug of the project
+     *                 (http://dev.bukkit.org/server-mods/SLUG_IS_HERE)
+     * @param file     The file that the plugin is running from, get this by doing
+     *                 this.getFile() from within your main class.
+     * @param type     Specify the type of update this will be. See
+     *                 {@link UpdateType}
+     * @param announce True if the program should announce the progress of new
+     *                 updates in console
+     */
+    public Updater(Plugin plugin, String slug, File file, UpdateType type, boolean announce) {
+        this.plugin = plugin;
+        this.type = type;
+        this.announce = announce;
+        this.file = file;
+        try {
+            // Obtain the results of the project's file feed
+            url = new URL(DBOUrl + slug + "/files.rss");
+        } catch (MalformedURLException ex) {
+            // Invalid slug
+            plugin.getLogger().warning("The author of this plugin (" + plugin.getDescription().getAuthors().get(0) + ") has misconfigured their Auto Update system");
+            plugin.getLogger().warning("The project slug given ('" + slug + "') is invalid. Please nag the author about this.");
+            result = Updater.UpdateResult.FAIL_BADSLUG; // Bad slug! Bad!
+        }
+        thread = new Thread(new UpdateRunnable());
+        thread.start();
+    }
 
     public static void updateResultCustom(Updater updater) {
         Updater.UpdateResult result = updater.getResult();
@@ -66,103 +96,9 @@ public class Updater {
                 Bukkit.getServer().broadcastMessage(ChatColor.BOLD + "" + ChatColor.RED + "Please download and install the new version of NeXTQuarry manually.");
                 break;
             case UPDATE_AVAILABLE:
-            Bukkit.getServer().broadcastMessage(ChatColor.BOLD + "" + ChatColor.AQUA + "A new update for NeXTQuarry is available!");
+                Bukkit.getServer().broadcastMessage(ChatColor.BOLD + "" + ChatColor.AQUA + "A new update for NeXTQuarry is available!");
                 Bukkit.getServer().broadcastMessage(ChatColor.BOLD + "" + ChatColor.AQUA + "Please download and install the new version of NeXTQuarry to update.");
         }
-    }
-
-    /**
-     * Gives the dev the result of the update process. Can be obtained by called
-     * getResult().
-     */
-    public enum UpdateResult {
-
-        /**
-         * The updater found an update, and has readied it to be loaded the next
-         * time the server restarts/reloads.
-         */
-        SUCCESS,
-        /**
-         * The updater did not find an update, and nothing was downloaded.
-         */
-        NO_UPDATE,
-        /**
-         * The updater found an update, but was unable to download it.
-         */
-        FAIL_DOWNLOAD,
-        /**
-         * For some reason, the updater was unable to contact dev.bukkit.org to
-         * download the file.
-         */
-        FAIL_DBO,
-        /**
-         * When running the version check, the file on DBO did not contain the a
-         * version in the format 'vVersion' such as 'v1.0'.
-         */
-        FAIL_NOVERSION,
-        /**
-         * The slug provided by the plugin running the updater was invalid and
-         * doesn't exist on DBO.
-         */
-        FAIL_BADSLUG,
-        /**
-         * The updater found an update, but because of the UpdateType being set
-         * to NO_DOWNLOAD, it wasn't downloaded.
-         */
-        UPDATE_AVAILABLE
-    }
-
-    /**
-     * Allows the dev to specify the type of update that will be run.
-     */
-    public enum UpdateType {
-
-        /**
-         * Run a version check, and then if the file is out of date, download
-         * the newest version.
-         */
-        DEFAULT,
-        /**
-         * Don't run a version check, just find the latest update and download
-         * it.
-         */
-        NO_VERSION_CHECK,
-        /**
-         * Get information about the version and the download size, but don't
-         * actually download anything.
-         */
-        NO_DOWNLOAD
-    }
-
-    /**
-     * Initialize the updater
-     *
-     * @param plugin The plugin that is checking for an update.
-     * @param slug The dev.bukkit.org slug of the project
-     * (http://dev.bukkit.org/server-mods/SLUG_IS_HERE)
-     * @param file The file that the plugin is running from, get this by doing
-     * this.getFile() from within your main class.
-     * @param type Specify the type of update this will be. See
-     * {@link UpdateType}
-     * @param announce True if the program should announce the progress of new
-     * updates in console
-     */
-    public Updater(Plugin plugin, String slug, File file, UpdateType type, boolean announce) {
-        this.plugin = plugin;
-        this.type = type;
-        this.announce = announce;
-        this.file = file;
-        try {
-            // Obtain the results of the project's file feed
-            url = new URL(DBOUrl + slug + "/files.rss");
-        } catch (MalformedURLException ex) {
-            // Invalid slug
-            plugin.getLogger().warning("The author of this plugin (" + plugin.getDescription().getAuthors().get(0) + ") has misconfigured their Auto Update system");
-            plugin.getLogger().warning("The project slug given ('" + slug + "') is invalid. Please nag the author about this.");
-            result = Updater.UpdateResult.FAIL_BADSLUG; // Bad slug! Bad!
-        }
-        thread = new Thread(new UpdateRunnable());
-        thread.start();
     }
 
     /**
@@ -276,7 +212,7 @@ public class Updater {
             ZipFile zipFile = new ZipFile(fSourceZip);
             Enumeration<? extends ZipEntry> e = zipFile.entries();
             while (e.hasMoreElements()) {
-                ZipEntry entry = (ZipEntry) e.nextElement();
+                ZipEntry entry = e.nextElement();
                 File destinationFilePath = new File(zipPath, entry.getName());
                 destinationFilePath.getParentFile().mkdirs();
                 if (entry.isDirectory()) {
@@ -284,7 +220,7 @@ public class Updater {
                 } else {
                     BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(entry));
                     int b;
-                    byte buffer[] = new byte[BYTE_SIZE];
+                    byte[] buffer = new byte[BYTE_SIZE];
                     FileOutputStream fos = new FileOutputStream(destinationFilePath);
                     BufferedOutputStream bos = new BufferedOutputStream(fos, BYTE_SIZE);
                     while ((b = bis.read(buffer, 0, BYTE_SIZE)) != -1) {
@@ -519,6 +455,69 @@ public class Updater {
             plugin.getLogger().warning("Could not reach BukkitDev file stream for update checking. Is dev.bukkit.org offline?");
             return null;
         }
+    }
+
+    /**
+     * Gives the dev the result of the update process. Can be obtained by called
+     * getResult().
+     */
+    public enum UpdateResult {
+
+        /**
+         * The updater found an update, and has readied it to be loaded the next
+         * time the server restarts/reloads.
+         */
+        SUCCESS,
+        /**
+         * The updater did not find an update, and nothing was downloaded.
+         */
+        NO_UPDATE,
+        /**
+         * The updater found an update, but was unable to download it.
+         */
+        FAIL_DOWNLOAD,
+        /**
+         * For some reason, the updater was unable to contact dev.bukkit.org to
+         * download the file.
+         */
+        FAIL_DBO,
+        /**
+         * When running the version check, the file on DBO did not contain the a
+         * version in the format 'vVersion' such as 'v1.0'.
+         */
+        FAIL_NOVERSION,
+        /**
+         * The slug provided by the plugin running the updater was invalid and
+         * doesn't exist on DBO.
+         */
+        FAIL_BADSLUG,
+        /**
+         * The updater found an update, but because of the UpdateType being set
+         * to NO_DOWNLOAD, it wasn't downloaded.
+         */
+        UPDATE_AVAILABLE
+    }
+
+    /**
+     * Allows the dev to specify the type of update that will be run.
+     */
+    public enum UpdateType {
+
+        /**
+         * Run a version check, and then if the file is out of date, download
+         * the newest version.
+         */
+        DEFAULT,
+        /**
+         * Don't run a version check, just find the latest update and download
+         * it.
+         */
+        NO_VERSION_CHECK,
+        /**
+         * Get information about the version and the download size, but don't
+         * actually download anything.
+         */
+        NO_DOWNLOAD
     }
 
     private class UpdateRunnable implements Runnable {

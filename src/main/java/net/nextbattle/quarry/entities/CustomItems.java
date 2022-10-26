@@ -40,7 +40,7 @@ public class CustomItems {
         meta.setLore(lorelist);
         is.setItemMeta(meta);
         fuel_efficiency_upgrade = is;
-        
+
         //Smelter Upgrade
         is = new ItemStack(MainClass.config.smelter_upgrade, 1);
         meta = is.getItemMeta();
@@ -51,7 +51,7 @@ public class CustomItems {
         meta.setLore(lorelist);
         is.setItemMeta(meta);
         smelter_upgrade = is;
-        
+
         //Liquid Miner
         is = new ItemStack(MainClass.config.liquid_miner, 1);
         meta = is.getItemMeta();
@@ -62,7 +62,7 @@ public class CustomItems {
         meta.setLore(lorelist);
         is.setItemMeta(meta);
         liquid_miner = is;
-        
+
         //Tier 1 Quarry
         is = new ItemStack(Material.IRON_BLOCK, 1);
         meta = is.getItemMeta();
@@ -145,7 +145,11 @@ public class CustomItems {
         meta.setLore(lorelist);
         is.setItemMeta(meta);
         chest_miner = is;
-        
+
+    }
+
+    public static boolean customItemsMatch(ItemStack first, ItemStack second) {
+        return first.getItemMeta().equals(second.getItemMeta());
     }
 
     public void addRecipes() {
@@ -159,14 +163,14 @@ public class CustomItems {
         recipe.setIngredient('B', Material.REDSTONE);
         recipe.setIngredient('C', Material.DIAMOND);
         Bukkit.getServer().addRecipe(recipe);
-        
+
         //Liquid Miner
         recipe = new ShapedRecipe(liquid_miner);
         recipe.shape("A A", "A A", " B ");
         recipe.setIngredient('A', Material.IRON_INGOT);
         recipe.setIngredient('B', Material.BUCKET);
         Bukkit.getServer().addRecipe(recipe);
-        
+
         //Tier 1 Quarry
         recipe = new ShapedRecipe(quarry_tier1);
         recipe.shape("ABA", "ACA", "ADA");
@@ -230,26 +234,18 @@ public class CustomItems {
         recipe = new ShapedRecipe(chest_miner);
         recipe.shape(" A ", " B ", " C ");
         recipe.setIngredient('A', Material.REDSTONE);
-        recipe.setIngredient('B', Material.GOLD_HOE);
-        recipe.setIngredient('C', Material.CHEST);
-        Bukkit.getServer().addRecipe(recipe);
-        
-        //Smelter upgrade
-        recipe = new ShapedRecipe(smelter_upgrade);
-        recipe.shape("ABA", "CDA", "ABA");
-        recipe.setIngredient('A', Material.IRON_INGOT);
-        recipe.setIngredient('B', Material.HOPPER);
-        recipe.setIngredient('C', Material.REDSTONE);
-        recipe.setIngredient('D', Material.FURNACE);
-        Bukkit.getServer().addRecipe(recipe);
+             recipe.setIngredient('B', Material.GOLD_HOE);
+             recipe.setIngredient('C', Material.CHEST);
+             Bukkit.getServer().addRecipe(recipe);
 
-    }
-    
-    public static boolean customItemsMatch(ItemStack first, ItemStack second)
-    {
-        if (first.getItemMeta().equals(second.getItemMeta())) {
-            return true;
-        }
-        return false;
-    }
-}
+             //Smelter upgrade
+             recipe = new ShapedRecipe(smelter_upgrade);
+             recipe.shape("ABA", "CDA", "ABA");
+             recipe.setIngredient('A', Material.IRON_INGOT);
+             recipe.setIngredient('B', Material.HOPPER);
+             recipe.setIngredient('C', Material.REDSTONE);
+             recipe.setIngredient('D', Material.FURNACE);
+             Bukkit.getServer().addRecipe(recipe);
+
+             }
+             }

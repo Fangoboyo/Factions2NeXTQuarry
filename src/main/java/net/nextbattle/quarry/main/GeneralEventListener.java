@@ -91,7 +91,6 @@ public class GeneralEventListener implements Listener {
                     }
                     p.openInventory(q.fuel_inv);
                 }
-                return;
             }
         }
 

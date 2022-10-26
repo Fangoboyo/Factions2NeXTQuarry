@@ -1,10 +1,11 @@
 package net.nextbattle.quarry.support;
 
-import java.util.logging.Level;
 import net.nextbattle.quarry.main.MainClass;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+
+import java.util.logging.Level;
 
 public class PluginSupport {
 
