@@ -1,6 +1,5 @@
 package net.nextbattle.quarry.entities;
 
-import java.util.ArrayList;
 import net.nextbattle.quarry.main.MainClass;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -8,6 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.ArrayList;
 
 public class CustomItems {
 
