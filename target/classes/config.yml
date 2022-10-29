@@ -1,0 +1,68 @@
+#NeXTQuarry v1.1.0 - by BeMacized - http://www.NeXTBattle.Net/
+
+# -- CONFIG -- 
+
+# -- QUARRY OPTIONS --
+#Private Quaries: If set to true, players can't mine quarries of others. Only their own. The nextquarry.admin permission node overrides this. OP status has the same effect.
+private-quarries: true
+#Ignore Blocks: All blocktypes in this list can't be mined by a quarry. IMPORTANT: Removing the liquids from this list, may lag or crash your server!
+ignored-blocks:
+- '7'
+- '49' 
+
+#Global Max Quarries: The maximum amount of quarries in the whole server (nextquarry.admin bypasses this feature)
+global-max-quarries: 256
+#User max tier 1 quarries: The maximum amount of tier 1 quarries a user can have (nextquarry.admin bypasses this feature)
+user-max-tier-1-quarries: 8
+#User max tier 2 quarries: The maximum amount of tier 2 quarries a user can have (nextquarry.admin bypasses this feature)
+user-max-tier-2-quarries: 8
+#User max tier 3 quarries: The maximum amount of tier 3 quarries a user can have (nextquarry.admin bypasses this feature)
+user-max-tier-3-quarries: 8
+#User max quarries: The maximum amount of quarries a user can place. This should probably be equal to the sum of the limit of tiers (tier1 + tier2 + tier3)
+user-max-quarries: 24
+
+# -- PLUGIN OPTIONS --
+#Auto Update: Makes sure the plugin updates automatically when there's an update available.
+auto-update: true
+#Update Notifications: Gives you a notification when there's a new update available.
+#NOTE: Only works when auto update is turned off!
+update-notify: false
+#Save Interval: The interval in seconds in between saves.
+#NOTE: It is highly recommended to only use values above 10 seconds.
+save-interval: 60
+
+# -- ANTI-LAG OPTIONS --
+#Continue when unloaded: If set to false, quarries will not do anything when they are in an unloaded chunk.
+continue-when-unloaded: false
+#Continue when offline: If set to false, quarries will not do anything when their owner is offline.
+continue-when-offline: false
+#Draw all beams: If set to false, only 1 beam will be drawn for the arm of the quarry. Less aesthetics, but less resource intensive.
+draw-all-beams: true
+
+# -- MISCELLANEOUS OPTIONS --
+#Dev join message: Shows a custom join message for any developer who joins. Please leave this on.
+dev-join-message: true
+#Send usage data: Sends anonymous usage data about the plugin for statistics to mcstats.org
+#Please leave this on, as it gives us an idea on how much our plugin is used. No personal data is sent.
+send-usage-data: true
+
+# -- ITEM OPTIONS --
+#Assign custom id's to the items specific for this plugin - Quarry blocks are not configurable.
+#These are set to their recommended values. It is highly adviced not to change them.
+#WARNING: If these items are changed, the currently crafted ones won't change to the new items, and will lose their functionality.
+speed_upgrade: 347
+wrench_tool: 369
+fuel_tool: 325
+fuel_finder_upgrade: 96
+chest_miner: 286
+fuel_efficiency_upgrade: 120
+smelter_upgrade: 61
+liquid_miner: 154
+ 
+# -- WORLD OPTIONS --
+#World whitelist enabled: If set to true, quarries will only be placable in worlds listed in the worlds whitelist.
+world-whitelist-enabled: false
+#World whitelist: List all worlds here in which quarries are placable. Only works if it is enabled in the "world-whitelist-enabled" option.
+world-whitelist:
+- 'world'
+

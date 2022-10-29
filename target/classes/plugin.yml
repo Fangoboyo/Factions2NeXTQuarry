@@ -3,6 +3,7 @@ main: net.nextbattle.quarry.main.MainClass
 version: 1.5.1
 description: Adds quarries to vanilla minecraft
 author: BongoCat
+depend: [BnogoRPG]
 permissions:
    nextquarry.user.*:
      description: Gives all user permissions for NeXTQuarry.
